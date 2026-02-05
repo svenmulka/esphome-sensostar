@@ -87,9 +87,15 @@ Below is a visual example of the wired hardware setup.
 
 ### Image
 
+Version 1
+
 <img src="pictures/Sensostar_w_ESP32_Sensostar.png" alt="SensoStar Hardware Example" width="800px">
 
 <img src="pictures/ESP_Sensostar.png" alt="SensoStar Hardware Example" width="800px">
+
+Version 2
+
+<img src="pictures/ESP_Sensostar_V2.png" alt="SensoStar Hardware Example V2" width="800px">
 
 ### Web-Interface
 
