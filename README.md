@@ -107,8 +107,13 @@ Version 2
 
 ### Schematics
 
+Version 1
+
 <img src="pictures/ESP32_Sensostar.png" alt="SensoStar Hardware Example" width="800px">
 
+Version 2
+
+<img src="pictures/ESP32_Sensostar_V2.png" alt="SensoStar Hardware Example" width="800px">
 ---
 
 ## 🚀 Setup Instructions
