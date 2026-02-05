@@ -87,13 +87,13 @@ Below is a visual example of the wired hardware setup.
 
 ### Image
 
-Version 1
+Version 1 (black PCB)
 
 <img src="pictures/Sensostar_w_ESP32_Sensostar.png" alt="SensoStar Hardware Example" width="800px">
 
 <img src="pictures/ESP_Sensostar.png" alt="SensoStar Hardware Example" width="800px">
 
-Version 2
+Version 2 (red PCB)
 
 <img src="pictures/ESP_Sensostar_V2.png" alt="SensoStar Hardware Example V2" width="800px">
 
@@ -107,11 +107,11 @@ Version 2
 
 ### Schematics
 
-Version 1
+Version 1 (black PCB)
 
 <img src="pictures/ESP32_Sensostar.png" alt="SensoStar Hardware Example" width="800px">
 
-Version 2
+Version 2 (red PCB)
 
 <img src="pictures/ESP32_Sensostar_V2.png" alt="SensoStar Hardware Example" width="800px">
 ---
@@ -141,10 +141,20 @@ Version 2
    [Generate the key online](https://www.cryptool.org/en/cto/openssl/)
    
 4. **Build and upload your firmware:**
+
+Black PCB
+
    ```bash
    cd path\to\your\config
-   esphome run sensostar.yaml
+   esphome run sensostar_black.yaml
    ```
+   
+Red PCB
+
+   ```bash
+   cd path\to\your\config
+   esphome run sensostar_red.yaml
+   ```   
    
 5. **Fallback in case no credential were found**
 
