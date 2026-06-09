@@ -6,15 +6,25 @@ esphome:
   platformio_options:
     board_build.arduino.memory_type: qio_opi
   on_boot:
+    priority: -100  # nach NVS-Restore ausführen
     then:
       - mqtt.disable:
-      - output.turn_off: adc_control  # IO14 LOW at boot
-      - script.execute: read_adc_script  # Immediately read ADC once at boot
+      - output.turn_off: adc_control
+      - script.execute: read_adc_script
       - lambda: |-
           if (!id(wifi_connected)) {
             id(ap_mode_blink).execute();
           }
-#          id(api_key_text).publish_state("${api_key_display}");    # uncommet if you want to use an api key   
+          // MQTT-Konfiguration aus NVS-Werten wiederherstellen
+          std::string addr = id(broker_address).state;
+          uint16_t port = (uint16_t)atoi(id(mqtt_port).state.c_str());
+          if (!addr.empty() && port > 0 && port <= 65535) {
+            id(mqtt_broker).set_broker_address(addr.c_str());
+            id(mqtt_broker).set_broker_port(port);
+            id(mqtt_broker).set_username(id(mqtt_user).state.c_str());
+            id(mqtt_broker).set_password(id(mqtt_pwd).state.c_str());
+            ESP_LOGI("mqtt", "MQTT config restored: %s:%d", addr.c_str(), port);
+          } 
     
 esp32:
   variant: esp32c6
