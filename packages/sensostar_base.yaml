@@ -1,0 +1,320 @@
+# ============================================================
+# sensostar_base.yaml
+# Gemeinsame, BOARD-NEUTRALE Basis-Konfiguration.
+# Wird per packages: !include eingebunden.
+#
+# Board-spezifisches (Chip, Pins, ggf. Logger-UART) steht NICHT
+# hier, sondern in der jeweiligen Geräte-Datei
+# (sensostar_red.yaml = ESP32-C6, sensostar_black.yaml = ESP32-S3)
+# und wird über substitutions hereingereicht:
+#   pin_uart_tx / pin_uart_rx
+#   pin_adc_input / pin_adc_control
+#   pin_heartbeat / pin_wifi_led / pin_mbus_data / pin_mbus_yellow
+# ============================================================
+
+# ----- on_boot: gemeinsame Boot-Aktionen --------------------
+# WiFi- bzw. Ethernet-Module können weitere Aktionen anhängen.
+esphome:
+  on_boot:
+    priority: -100  # nach NVS-Restore ausführen
+    then:
+      - mqtt.disable:
+      - output.turn_off: adc_control
+      - script.execute: read_adc_script
+      - lambda: |-
+          // MQTT-Konfiguration aus NVS-Werten wiederherstellen
+          std::string addr = id(broker_address).state;
+          uint16_t port = (uint16_t)atoi(id(mqtt_port).state.c_str());
+          if (!addr.empty() && port > 0 && port <= 65535) {
+            id(mqtt_broker).set_broker_address(addr.c_str());
+            id(mqtt_broker).set_broker_port(port);
+            id(mqtt_broker).set_username(id(mqtt_user).state.c_str());
+            id(mqtt_broker).set_password(id(mqtt_pwd).state.c_str());
+            ESP_LOGI("mqtt", "MQTT config restored: %s:%d", addr.c_str(), port);
+          }
+
+# ----- Logging ----------------------------------------------
+# Nur das Board-neutrale Level. hardware_uart/baud_rate (falls
+# nötig, z. B. S3) kommen per Merge aus der Geräte-Datei dazu.
+logger:
+  level: info
+
+# ----- API / OTA / Web-Server -------------------------------
+api:
+  reboot_timeout: 600min
+
+ota:
+  platform: esphome
+
+# ----- Externe Komponente -----------------------------------
+external_components:
+  - source:
+      type: git
+      url: https://github.com/STB3/esphome-sensostar
+      ref: main
+    components: [ SensoStar_MBus ]
+
+# ----- Zeit -------------------------------------------------
+time:
+  - platform: sntp
+    id: sntp_time
+    timezone: Europe/Amsterdam
+    servers: ["0.nl.pool.ntp.org", "1.nl.pool.ntp.org", "2.nl.pool.ntp.org"]
+
+# ----- M-Bus UART -------------------------------------------
+uart:
+  - id: uart_mbus
+    tx_pin: ${pin_uart_tx}
+    rx_pin: ${pin_uart_rx}
+    baud_rate: 2400
+    parity: EVEN
+
+# ----- SensoStar Komponente ---------------------------------
+SensoStar_MBus:
+  id: sensostar_id
+  uart_id: uart_mbus
+  update_interval: 10s
+  data_led: mbus_data_led
+
+# ----- Sensoren ---------------------------------------------
+sensor:
+  - platform: SensoStar_MBus
+    energy:
+      name: "SensoStar Energy"
+    volume:
+      name: "SensoStar Volume"
+    power:
+      name: "SensoStar Power"
+    flow:
+      name: "SensoStar Flow"
+    temperature_flow:
+      name: "SensoStar Flow Temperature"
+    temperature_return:
+      name: "SensoStar Return Temperature"
+    temperature_diff:
+      name: "SensoStar Temperature Difference"
+    calculated_power:
+      name: "SensoStar Calculated Power"
+
+  - platform: adc
+    pin: ${pin_adc_input}
+    id: adc_input_sensor
+    name: "SensoStar Battery Level"
+    update_interval: never   # getriggert durch read_adc_script
+    filters:
+      - lambda: return x * 3.6;   # Vbat via Spannungsteiler 39k--o--15k
+
+# ----- Substitutions ----------------------------------------
+substitutions:
+  api_key_display: !secret api_encryption_key
+
+# ----- Text-Sensoren ----------------------------------------
+text_sensor:
+  - platform: SensoStar_MBus
+    status:
+      name: "SensoStar Status"
+
+# ----- Ausgänge (GPIO) --------------------------------------
+output:
+  - platform: gpio
+    pin: ${pin_adc_control}
+    id: adc_control
+  - platform: gpio
+    pin: ${pin_heartbeat}
+    id: heartbeat_output   # direkt im Interval angesteuert (kein Light -> kein NVS-Write)
+  - platform: gpio
+    pin: ${pin_wifi_led}
+    id: wifi_led       # auch für Ethernet-Variante: zeigt Link-Status
+  - platform: gpio
+    pin: ${pin_mbus_data}
+    id: mbus_data_led
+  - platform: gpio
+    pin: ${pin_mbus_yellow}
+    id: mbus_yellow_led
+
+# ----- Scripts ----------------------------------------------
+script:
+  - id: read_adc_script
+    then:
+      - output.turn_on: adc_control      # adc_control HIGH
+      - delay: 8ms                        # Kondensator aufladen
+      - component.update: adc_input_sensor
+      - output.turn_off: adc_control     # adc_control LOW
+
+# ----- Intervalle -------------------------------------------
+interval:
+  - interval: 600s
+    then:
+      - script.execute: read_adc_script
+  - interval: 5s
+    then:
+      # Heartbeat direkt über den GPIO-Output - KEIN light: mehr.
+      # Ein binary light schreibt bei restore_mode != ALWAYS_* jeden
+      # Zustandswechsel ins NVS und liess die Preferences-Partition
+      # ueber Stunden volllaufen (-> MQTT-Daten gingen verloren).
+      - output.turn_on: heartbeat_output
+      - delay: 500ms
+      - output.turn_off: heartbeat_output
+
+# ----- Buttons ----------------------------------------------
+button:
+  - platform: template
+    name: "Read battery level now"
+    on_press:
+      then:
+        - script.execute: read_adc_script
+
+  - platform: factory_reset
+    id: factory_reset_btn
+    name: Factory reset
+
+  - platform: restart
+    name: Reboot
+
+  - platform: safe_mode
+    id: button_safe_mode
+    name: Safe Mode Boot
+
+# ----- Binäre Sensoren --------------------------------------
+binary_sensor:
+  - platform: status
+    name: "ESP Status"
+    id: esp_status
+    internal: true
+
+# ----- Globale Variablen ------------------------------------
+globals:
+  - id: wifi_connected
+    type: bool
+    restore_value: no
+    initial_value: 'false'
+
+# ----- MQTT -------------------------------------------------
+mqtt:
+  enable_on_boot: false
+  broker: ""
+  id: mqtt_broker
+  username: ""
+  password: ""
+
+text:
+  - platform: template
+    mode: text
+    name: "1. MQTT address"
+    id: "broker_address"
+    icon: "mdi:text"
+    optimistic: true
+    internal: false
+    entity_category: config
+    #initial_value: ""
+    restore_value: true
+    on_value:
+      then:
+        - logger.log:
+            format: "%s"
+            args: ["x.c_str()"]
+        - lambda: |-
+            id(mqtt_broker).set_broker_address(x.c_str());
+            ESP_LOGI("mqtt", "MQTT broker set to %s", x.c_str());
+
+  - platform: template
+    mode: text
+    name: "2. MQTT Port"
+    id: "mqtt_port"
+    icon: "mdi:text"
+    optimistic: true
+    internal: false
+    entity_category: config
+    initial_value: "1883"
+    restore_value: true
+    on_value:
+      then:
+        - logger.log:
+            format: "%s"
+            args: ["x.c_str()"]
+        - lambda: |-
+            uint16_t port = (uint16_t) atoi(x.c_str());
+            if (port < 1 || port > 65535) {
+              ESP_LOGW("mqtt", "Invalid port %d, ignoring", port);
+            } else {
+              id(mqtt_broker).set_broker_port(port);
+              ESP_LOGI("mqtt", "MQTT Port set to %d", port);
+            }
+
+  - platform: template
+    mode: text
+    name: "3. MQTT Username"
+    id: "mqtt_user"
+    icon: "mdi:text"
+    optimistic: true
+    internal: false
+    entity_category: config
+    #initial_value: ""
+    restore_value: true
+    on_value:
+      then:
+        - logger.log:
+            format: "%s"
+            args: ["x.c_str()"]
+        - lambda: |-
+            id(mqtt_broker).set_username(x.c_str());
+            ESP_LOGI("mqtt", "MQTT user set to %s", x.c_str());
+
+  - platform: template
+    mode: password
+    name: "4. MQTT Password"
+    id: "mqtt_pwd"
+    icon: "mdi:text"
+    optimistic: true
+    internal: false
+    entity_category: config
+    #initial_value: ""
+    restore_value: true
+    on_value:
+      then:
+        - logger.log:
+            format: "%s"
+            args: ["x.c_str()"]
+        - lambda: |-
+            id(mqtt_broker).set_password(x.c_str());
+            ESP_LOGI("mqtt", "MQTT password set to %s", x.c_str());
+
+switch:
+  - platform: template
+    name: "5. MQTT Enabled"
+    id: mqtt_enabled
+    optimistic: true
+    restore_mode: "RESTORE_DEFAULT_OFF"
+    entity_category: config
+
+    turn_off_action:
+      - logger.log: "MQTT disabled"
+      - mqtt.disable:
+      - lambda: |-
+          ESP_LOGI("mqtt", "MQTT: disabled.");
+
+    turn_on_action:
+      - lambda: |-
+          std::string addr = id(broker_address).state;
+          uint16_t port = (uint16_t)atoi(id(mqtt_port).state.c_str());
+
+          if (addr.empty()) {
+            ESP_LOGW("mqtt", "Cannot enable MQTT: broker address is empty");
+            id(mqtt_enabled).turn_off();
+            return;
+          }
+          if (port < 1 || port > 65535) {
+            ESP_LOGW("mqtt", "Cannot enable MQTT: invalid port %d", port);
+            id(mqtt_enabled).turn_off();
+            return;
+          }
+
+          ESP_LOGI("mqtt", "MQTT enabled on %s:%d", addr.c_str(), port);
+          id(mqtt_broker).set_broker_address(addr.c_str());
+          id(mqtt_broker).set_broker_port(port);
+          id(mqtt_broker).set_username(id(mqtt_user).state.c_str());
+          id(mqtt_broker).set_password(id(mqtt_pwd).state.c_str());
+          App.scheduler.set_timeout(nullptr, "mqtt_enable", 1000, []() {
+            id(mqtt_broker).enable();
+          });
+          return;

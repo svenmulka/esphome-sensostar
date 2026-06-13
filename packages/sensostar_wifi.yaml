@@ -1,0 +1,73 @@
+# ============================================================
+# sensostar_wifi.yaml
+# WiFi-Konnektivitäts-Modul (Hardware: sensostar-red)
+# ============================================================
+
+wifi:
+  # ssid: !secret wifi_ssid
+  # password: !secret wifi_password
+  power_save_mode: NONE
+  ap:
+    ssid: "Sensostar"
+  reboot_timeout: 0s 
+  
+  on_connect:
+      - script.stop: ap_mode_blink
+      - output.turn_on: wifi_led
+      - lambda: |-
+          id(wifi_connected) = true;        // ← das fehlte
+          if (id(mqtt_enabled).state) {
+            ESP_LOGI("wifi", "Wi-Fi connected and MQTT switch is ON — enabling MQTT");
+            id(mqtt_broker).enable();
+          }
+       
+  on_disconnect:
+      - lambda: |-
+          id(wifi_connected) = false;       // ← damit Blink-Bedingung wieder greift
+      - script.execute: ap_mode_blink
+
+captive_portal:
+
+web_server:
+  version: 3   # WiFi: alle 4 Sockets verfügbar
+  port: 80
+
+# ----- WiFi-spezifischer Sensor: Signalstärke ---------------
+sensor:
+  - platform: wifi_signal
+    name: "SensoStar WiFi Signal"
+    id: wifi_signal_sensor
+    update_interval: 60s
+
+# ----- WiFi-spezifischer Button -----------------------------
+button:
+  - platform: template
+    name: "Read WiFi Signal now"
+    on_press:
+      then:
+        - component.update: wifi_signal_sensor
+
+# ----- AP-Mode Blink-Script ---------------------------------
+script:
+  - id: ap_mode_blink
+    mode: restart
+    then:
+      - while:
+          condition:
+            lambda: 'return !id(wifi_connected);'
+          then:
+            - output.turn_on: wifi_led
+            - delay: 200ms
+            - output.turn_off: wifi_led
+            - delay: 1000ms
+
+# ----- on_boot: AP-Blink starten falls kein WiFi ------------
+# Wird an die on_boot-Liste aus sensostar_base.yaml angehängt.
+esphome:
+  on_boot:
+    priority: -100  # nach NVS-Restore ausführen
+    then:
+      - lambda: |-
+          if (!id(wifi_connected)) {
+            id(ap_mode_blink).execute();
+          }
