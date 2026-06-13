@@ -1,0 +1,35 @@
+# ============================================================
+# sensostar_red.yaml  —  Hardware-Variante: ESP32-C6 / WiFi
+# Flash:  esphome upload sensostar_red.yaml --device COM12
+# Erase:  esptool --port COM12 erase_flash
+# ============================================================
+
+esphome:
+  name: sensostar-v2
+  name_add_mac_suffix: true
+  comment: SensoStar Energy Meter
+  platformio_options:
+    board_build.arduino.memory_type: qio_opi
+
+# ----- Chip-Definition (C6) ---------------------------------
+esp32:
+  variant: esp32c6
+  flash_size: 4MB
+  framework:
+    type: esp-idf
+
+# ----- Board-spezifische Pinbelegung (C6) -------------------
+substitutions:
+  pin_uart_tx:     GPIO6
+  pin_uart_rx:     GPIO7
+  pin_adc_input:   GPIO1
+  pin_adc_control: GPIO14
+  pin_heartbeat:   GPIO4
+  pin_wifi_led:    GPIO3
+  pin_mbus_data:   GPIO2
+  pin_mbus_yellow: GPIO5
+
+# ----- Module -----------------------------------------------
+packages:
+  base:         !include packages/sensostar_base.yaml
+  connectivity: !include packages/sensostar_wifi.yaml
