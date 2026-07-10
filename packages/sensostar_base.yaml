@@ -121,7 +121,7 @@ text_sensor:
     update_interval: 3600s
 
   - platform: template
-    name: "Git Version"
+    name: "Firmware Git Version Tag"
     entity_category: diagnostic
     icon: mdi:git
     lambda: |-
