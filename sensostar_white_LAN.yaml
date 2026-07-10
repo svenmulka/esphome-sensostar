@@ -10,7 +10,7 @@
 # ============================================================
 
 esphome:
-  name: sensostar-v3-LAN
+  name: sensostar-v3-lan
   name_add_mac_suffix: true
   comment: SensoStar Energy Meter
   platformio_options:
