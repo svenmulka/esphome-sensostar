@@ -5,7 +5,7 @@
 #
 # Board-spezifisches (Chip, Pins, ggf. Logger-UART) steht NICHT
 # hier, sondern in der jeweiligen Geräte-Datei
-# (sensostar_red.yaml = ESP32-C6, sensostar_black.yaml = ESP32-S3)
+# (sensostar_red.yaml, sensostar_white_xxx.yaml = ESP32-C6, sensostar_black.yaml = ESP32-S3)
 # und wird über substitutions hereingereicht:
 #   pin_uart_tx / pin_uart_rx
 #   pin_adc_input / pin_adc_control
@@ -15,6 +15,9 @@
 # ----- on_boot: gemeinsame Boot-Aktionen --------------------
 # WiFi- bzw. Ethernet-Module können weitere Aktionen anhängen.
 esphome:
+  platformio_options:
+    extra_scripts:
+      - pre:../../../scripts/git_version.py
   on_boot:
     priority: -100  # nach NVS-Restore ausführen
     then:
@@ -93,8 +96,8 @@ sensor:
       name: "SensoStar Return Temperature"
     temperature_diff:
       name: "SensoStar Temperature Difference"
-    calculated_power:
-      name: "SensoStar Calculated Power"
+#    calculated_power:
+#      name: "SensoStar Calculated Power"
 
   - platform: adc
     pin: ${pin_adc_input}
@@ -110,6 +113,25 @@ substitutions:
 
 # ----- Text-Sensoren ----------------------------------------
 text_sensor:
+  - platform: template
+    name: "ESPHome Version"
+    entity_category: diagnostic
+    lambda: |-
+      return std::string(ESPHOME_VERSION);
+    update_interval: 3600s
+
+  - platform: template
+    name: "Git Version"
+    entity_category: diagnostic
+    icon: mdi:git
+    lambda: |-
+      #ifdef GIT_VERSION
+      return std::string(GIT_VERSION);
+      #else
+      return std::string("unknown");
+      #endif
+    update_interval: 3600s
+    
   - platform: SensoStar_MBus
     status:
       name: "SensoStar Status"
