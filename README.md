@@ -46,8 +46,8 @@ The firmware uses a **modular package architecture**. A thin device file selects
 esphome-sensostar/
 ├── sensostar_black.yaml        # Device file: ESP32-S3 / WiFi  (black PCB)
 ├── sensostar_red.yaml          # Device file: ESP32-C6 / WiFi  (red PCB)
-├── sensostar_blue_WLAN.yaml    # Device file: ESP32-C6 / WiFi  (blue PCB)
-├── sensostar_blue_LAN.yaml     # Device file: ESP32-C6 / Wired LAN via W5500 (blue PCB)
+├── sensostar_white_WLAN.yaml    # Device file: ESP32-C6 / WiFi  (white PCB)
+├── sensostar_white_LAN.yaml     # Device file: ESP32-C6 / Wired LAN via W5500 (white PCB)
 └── packages/
     ├── sensostar_base.yaml     # Shared: sensors, MQTT, scripts, LED outputs
     ├── sensostar_wifi.yaml     # Connectivity: WiFi + AP-mode blink
@@ -68,10 +68,10 @@ packages:
 |------|-----|------|-------------|
 | `sensostar_black.yaml` | Black | ESP32-S3 | WiFi |
 | `sensostar_red.yaml` | Red | ESP32-C6 | WiFi |
-| `sensostar_blue_WLAN.yaml` | Blue | ESP32-C6 | WiFi |
-| `sensostar_blue_LAN.yaml` | Blue | ESP32-C6 | Wired LAN (W5500) |
+| `sensostar_white_WLAN.yaml` | White | ESP32-C6 | WiFi |
+| `sensostar_white_LAN.yaml` | White | ESP32-C6 | Wired LAN (W5500) |
 
-> The blue PCB is available in two variants: use `sensostar_blue_WLAN.yaml` for the WiFi-only version and `sensostar_blue_LAN.yaml` for the wired Ethernet expansion board (W5500 via FFC adapter).
+> The white PCB is available in two variants: use `sensostar_white_WLAN.yaml` for the WiFi-only version and `sensostar_white_LAN.yaml` for the wired Ethernet expansion board (W5500 via FFC adapter).
 
 ---
 
@@ -251,8 +251,8 @@ All settings are stored in NVS and survive reboots.
 | `packages/sensostar_eth.yaml` | Wired LAN (W5500) connectivity module |
 | `sensostar_black.yaml` | Device file: Black PCB, ESP32-S3, WiFi |
 | `sensostar_red.yaml` | Device file: Red PCB, ESP32-C6, WiFi |
-| `sensostar_blue_WLAN.yaml` | Device file: Blue PCB, ESP32-C6, WiFi |
-| `sensostar_blue_LAN.yaml` | Device file: Blue PCB, ESP32-C6, Wired LAN |
+| `sensostar_white_WLAN.yaml` | Device file: white PCB, ESP32-C6, WiFi |
+| `sensostar_white_LAN.yaml` | Device file: white PCB, ESP32-C6, Wired LAN |
 
 ---
 
