@@ -131,11 +131,9 @@ The SensoStar meter uses a 12-pin internal connector for communication and power
 
 [![SensoStar Hardware V2](https://github.com/STB3/esphome-sensostar/raw/main/pictures/ESP_Sensostar_V2.png)](pictures/ESP_Sensostar_V2.png)
 
-### Version 3 — Blue PCB (ESP32-C6 / WiFi or Wired LAN)
+### Version 3 — White PCB (ESP32-C6 / WiFi or Wired LAN)
 
-<!-- 📸 PLACEHOLDER: Photo of the blue PCB (WiFi variant) — e.g. pictures/ESP_Sensostar_V3_WLAN.png -->
-
-<!-- 📸 PLACEHOLDER: Photo of the blue PCB with W5500 LAN expansion board — e.g. pictures/ESP_Sensostar_V3_LAN.png -->
+[![SensoStar Hardware V3](https://github.com/STB3/esphome-sensostar/raw/main/pictures/ESP_Sensostar_V2.png)](pictures/ESP32_Sensostar_white.png)
 
 ---
 
