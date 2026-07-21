@@ -135,6 +135,15 @@ The SensoStar meter uses a 12-pin internal connector for communication and power
 
 [![SensoStar Hardware V3](https://github.com/STB3/esphome-sensostar/raw/main/pictures/ESPHome_Sensostar_white_LAN.jpg)](pictures/ESPHome_Sensostar_white_LAN.jpg)
 
+Sensostar assembled with LAN-version
+
+[![SensoStar Hardware V3](https://github.com/STB3/esphome-sensostar/raw/main/pictures/ESPHome_Sensostar_white_PCB.jpg)](pictures/ESPHome_Sensostar_white_PCB.jpg)
+
+Sensostar with ESPHome Sensostar white
+
+[![SensoStar Hardware V3](https://github.com/STB3/esphome-sensostar/raw/main/pictures/ESPHome_Sensostar_white_LAN_PCB_with_module.jpg)](pictures/ESPHome_Sensostar_white_LAN_PCB_with_module.jpg)
+
+LAN PCB with soldered W5500 LAN module
 
 ---
 
