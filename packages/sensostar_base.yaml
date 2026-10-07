@@ -15,9 +15,6 @@
 # ----- on_boot: gemeinsame Boot-Aktionen --------------------
 # WiFi- bzw. Ethernet-Module können weitere Aktionen anhängen.
 esphome:
-  platformio_options:
-    extra_scripts:
-      - pre:../../../scripts/git_version.py
   on_boot:
     priority: -100  # nach NVS-Restore ausführen
     then:
@@ -49,14 +46,6 @@ api:
 ota:
   platform: esphome
 
-# ----- Externe Komponente -----------------------------------
-external_components:
-  - source:
-      type: git
-      url: https://github.com/STB3/esphome-sensostar
-      ref: main
-    components: [ SensoStar_MBus ]
-
 # ----- Zeit -------------------------------------------------
 time:
   - platform: sntp
@@ -82,28 +71,64 @@ SensoStar_MBus:
 # ----- Sensoren ---------------------------------------------
 sensor:
   - platform: SensoStar_MBus
+    id: sensostar_mbus
     energy:
+      id: sensostar_energy
       name: "SensoStar Energy"
-    volume:
-      name: "SensoStar Volume"
+      web_server:
+        sorting_group_id: group_heat_meter
+        sorting_weight: 10
     power:
+      id: sensostar_power
       name: "SensoStar Power"
+      web_server:
+        sorting_group_id: group_heat_meter
+        sorting_weight: 11
+    volume:
+      id: sensostar_volume
+      name: "SensoStar Volume"
+      web_server:
+        sorting_group_id: group_heat_meter
+        sorting_weight: 12
     flow:
+      id: sensostar_flow
       name: "SensoStar Flow"
+      web_server:
+        sorting_group_id: group_heat_meter
+        sorting_weight: 13
     temperature_flow:
+      id: sensostar_flow_temperature
       name: "SensoStar Flow Temperature"
+      web_server:
+        sorting_group_id: group_heat_meter
+        sorting_weight: 14
     temperature_return:
+      id: sensostar_return_temperature
       name: "SensoStar Return Temperature"
+      web_server:
+        sorting_group_id: group_heat_meter
+        sorting_weight: 15
     temperature_diff:
+      id: sensostar_temperature_difference
       name: "SensoStar Temperature Difference"
+      web_server:
+        sorting_group_id: group_heat_meter
+        sorting_weight: 16
 #    calculated_power:
+#      id: sensostar_calculated_power
 #      name: "SensoStar Calculated Power"
+#      web_server:
+#        sorting_group_id: group_heat_meter
+#        sorting_weight: 17
 
   - platform: adc
     pin: ${pin_adc_input}
     id: adc_input_sensor
     name: "SensoStar Battery Level"
     update_interval: never   # getriggert durch read_adc_script
+    entity_category: diagnostic
+    web_server:
+      sorting_weight: 111
     filters:
       - lambda: return x * 3.6;   # Vbat via Spannungsteiler 39k--o--15k
 
@@ -116,6 +141,9 @@ text_sensor:
   - platform: template
     name: "ESPHome Version"
     entity_category: diagnostic
+    web_server:
+      sorting_group_id: group_firmware
+      sorting_weight: 21
     lambda: |-
       return std::string(ESPHOME_VERSION);
     update_interval: 3600s
@@ -124,6 +152,9 @@ text_sensor:
     name: "Firmware Git Version Tag"
     entity_category: diagnostic
     icon: mdi:git
+    web_server:
+      sorting_group_id: group_firmware
+      sorting_weight: 20
     lambda: |-
       #ifdef GIT_VERSION
       return std::string(GIT_VERSION);
@@ -133,8 +164,11 @@ text_sensor:
     update_interval: 3600s
     
   - platform: SensoStar_MBus
+    id: sensostar_mbus
     status:
+      id: sensostar_status
       name: "SensoStar Status"
+      entity_category: diagnostic
 
 # ----- Ausgänge (GPIO) --------------------------------------
 output:
@@ -181,20 +215,25 @@ interval:
 # ----- Buttons ----------------------------------------------
 button:
   - platform: template
+    id: btn_read_battery
     name: "Read battery level now"
+    entity_category: diagnostic
+    web_server:
+      sorting_weight: 110
     on_press:
       then:
         - script.execute: read_adc_script
 
   - platform: factory_reset
-    id: factory_reset_btn
+    id: btn_factory_reset
     name: Factory reset
 
   - platform: restart
+    id: btn_reboot
     name: Reboot
 
   - platform: safe_mode
-    id: button_safe_mode
+    id: btn_safe_mode
     name: Safe Mode Boot
 
 # ----- Binäre Sensoren --------------------------------------

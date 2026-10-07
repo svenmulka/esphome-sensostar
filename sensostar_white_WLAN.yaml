@@ -1,5 +1,5 @@
 # ============================================================
-# sensostar_red.yaml  —  Hardware-Variante: ESP32-C6 / WiFi
+# sensostar_white_WLAN.yaml  —  Hardware-Variante: ESP32-C6 / WiFi
 # Flash:  esphome upload sensostar_red.yaml --device COM12
 # Erase:  esptool --port COM12 erase_flash
 # ============================================================
@@ -8,8 +8,6 @@ esphome:
   name: sensostar-v3-wifi
   name_add_mac_suffix: true
   comment: SensoStar Energy Meter
-  platformio_options:
-    board_build.arduino.memory_type: qio_opi
 
 # ----- Chip-Definition (C6) ---------------------------------
 esp32:
@@ -31,5 +29,6 @@ substitutions:
 
 # ----- Module -----------------------------------------------
 packages:
+  stb3:         !include packages/sensostar_stb3.yaml
   base:         !include packages/sensostar_base.yaml
   connectivity: !include packages/sensostar_wifi.yaml

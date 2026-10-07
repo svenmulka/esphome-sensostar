@@ -20,7 +20,7 @@ wifi:
             ESP_LOGI("wifi", "Wi-Fi connected and MQTT switch is ON — enabling MQTT");
             id(mqtt_broker).enable();
           }
-       
+
   on_disconnect:
       - lambda: |-
           id(wifi_connected) = false;       // ← damit Blink-Bedingung wieder greift
@@ -31,6 +31,18 @@ captive_portal:
 web_server:
   version: 3   # WiFi: alle 4 Sockets verfügbar
   port: 80
+  sorting_groups:
+    # Panel with heat meter information 
+    # display at front 
+    - id: group_heat_meter
+      name: "Heat Meter"
+      sorting_weight: 0
+
+    # Panel with firmware information
+    # display at end 
+    - id: group_firmware
+      name: "Firmware"
+      sorting_weight: 200
 
 # ----- WiFi-spezifischer Sensor: Signalstärke ---------------
 sensor:
@@ -38,11 +50,18 @@ sensor:
     name: "SensoStar WiFi Signal"
     id: wifi_signal_sensor
     update_interval: 60s
+    entity_category: diagnostic
+    web_server:
+      sorting_weight: 101
 
 # ----- WiFi-spezifischer Button -----------------------------
 button:
   - platform: template
     name: "Read WiFi Signal now"
+    id: btn_read_wifi_signal
+    entity_category: diagnostic
+    web_server:
+      sorting_weight: 100
     on_press:
       then:
         - component.update: wifi_signal_sensor

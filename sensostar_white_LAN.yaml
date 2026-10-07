@@ -1,5 +1,5 @@
 # ============================================================
-# sensostar_blue.yaml  —  Hardware-Variante: ESP32-C6 / Wired LAN (W5500)
+# sensostar_white_LAN.yaml  —  Hardware-Variante: ESP32-C6 / Wired LAN (W5500)
 # Flash:  esphome upload sensostar_blue.yaml --device COM12
 # Erase:  esptool --port COM12 erase_flash
 #
@@ -38,5 +38,6 @@ substitutions:
 
 # ----- Module -----------------------------------------------
 packages:
+  stb3:         !include packages/sensostar_stb3.yaml
   base:         !include packages/sensostar_base.yaml
   connectivity: !include packages/sensostar_eth.yaml

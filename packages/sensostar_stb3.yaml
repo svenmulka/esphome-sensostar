@@ -1,0 +1,13 @@
+# -----------------------------------------------------------------------------
+# sensostar_stb3.yaml
+# Link to repository https://github.com/STB3/esphome-sensostar
+# -----------------------------------------------------------------------------
+
+external_components:
+  - source:
+      type: git
+      url: https://github.com/STB3/esphome-sensostar
+      ref: main
+    components: [ SensoStar_MBus ]
+
+# -----------------------------------------------------------------------------

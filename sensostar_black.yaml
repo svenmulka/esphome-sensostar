@@ -40,5 +40,6 @@ substitutions:
 
 # ----- Module -----------------------------------------------
 packages:
+  stb3:         !include packages/sensostar_stb3.yaml
   base:         !include packages/sensostar_base.yaml
   connectivity: !include packages/sensostar_wifi.yaml
