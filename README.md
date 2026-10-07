@@ -116,6 +116,7 @@ The SensoStar meter uses a 12-pin internal connector for communication and power
 | 12 | GND | Connect to ESP GND |
 
 > **Note:** "NC" means *Not Connected*. Be sure to use level shifting or protective circuitry if needed, depending on your ESP model and power requirements.
+>
 > **Note:** The pin numbers in the schematic symbol are mirrored compared to the pin numbering shown in the PCB images. This is a schematic symbol error; the PCB implementation itself is correct.
 
 
