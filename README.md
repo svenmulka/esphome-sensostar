@@ -46,9 +46,10 @@ The firmware uses a **modular package architecture**. A thin device file selects
 esphome-sensostar/
 ├── sensostar_black.yaml        # Device file: ESP32-S3 / WiFi  (black PCB)
 ├── sensostar_red.yaml          # Device file: ESP32-C6 / WiFi  (red PCB)
-├── sensostar_white_WLAN.yaml    # Device file: ESP32-C6 / WiFi  (white PCB)
-├── sensostar_white_LAN.yaml     # Device file: ESP32-C6 / Wired LAN via W5500 (white PCB)
+├── sensostar_white_WLAN.yaml   # Device file: ESP32-C6 / WiFi  (white PCB)
+├── sensostar_white_LAN.yaml    # Device file: ESP32-C6 / Wired LAN via W5500 (white PCB)
 └── packages/
+    ├── sensostar_stb3.yaml     # Link to external github repository
     ├── sensostar_base.yaml     # Shared: sensors, MQTT, scripts, LED outputs
     ├── sensostar_wifi.yaml     # Connectivity: WiFi + AP-mode blink
     └── sensostar_eth.yaml      # Connectivity: W5500 Ethernet
@@ -58,6 +59,7 @@ Each device file defines board-specific substitutions (chip, pin mapping) and th
 
 ```yaml
 packages:
+  stb3:         !include packages/sensostar_stb3.yaml
   base:         !include packages/sensostar_base.yaml
   connectivity: !include packages/sensostar_wifi.yaml   # or sensostar_eth.yaml
 ```
@@ -114,6 +116,8 @@ The SensoStar meter uses a 12-pin internal connector for communication and power
 | 12 | GND | Connect to ESP GND |
 
 > **Note:** "NC" means *Not Connected*. Be sure to use level shifting or protective circuitry if needed, depending on your ESP model and power requirements.
+> **Note:** The pin numbers in the schematic symbol are mirrored compared to the pin numbering shown in the PCB images. This is a schematic symbol error; the PCB implementation itself is correct.
+
 
 [![SensoStar internal connector](https://github.com/STB3/esphome-sensostar/raw/main/pictures/Sensostar_internal_connector.png)](pictures/Sensostar_internal_connector.png)
 
