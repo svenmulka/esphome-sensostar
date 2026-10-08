@@ -78,15 +78,15 @@ sensor:
       web_server:
         sorting_group_id: group_heat_meter
         sorting_weight: 10
-    power:
-      id: sensostar_power
-      name: "SensoStar Power"
-      web_server:
-        sorting_group_id: group_heat_meter
-        sorting_weight: 11
     volume:
       id: sensostar_volume
       name: "SensoStar Volume"
+      web_server:
+        sorting_group_id: group_heat_meter
+        sorting_weight: 11
+    power:
+      id: sensostar_power
+      name: "SensoStar Power"
       web_server:
         sorting_group_id: group_heat_meter
         sorting_weight: 12
