@@ -13,53 +13,62 @@
 
 #include <vector>
 
+// ============================================================================
 namespace esphome {
 namespace sensostar {
+// ============================================================================
 
-class SensoStarComponent : public PollingComponent, public uart::UARTDevice {
- public:
-  SensoStarComponent() = default;
+class SensoStarComponent : public PollingComponent, public uart::UARTDevice
+{
+public:
+	SensoStarComponent() = default;
 
 #ifdef USE_SENSOR
-  SUB_SENSOR(energy)
-  SUB_SENSOR(volume)
-  SUB_SENSOR(power)
-  SUB_SENSOR(flow)
-  SUB_SENSOR(temperature_flow)
-  SUB_SENSOR(temperature_return)
-  SUB_SENSOR(temperature_diff)
-  SUB_SENSOR(calculated_power)
+	SUB_SENSOR(energy)
+	SUB_SENSOR(volume)
+	SUB_SENSOR(power)
+	SUB_SENSOR(flow)
+	SUB_SENSOR(temperature_flow)
+	SUB_SENSOR(temperature_return)
+	SUB_SENSOR(temperature_diff)
+	SUB_SENSOR(calculated_power)
 #endif
 
 #ifdef USE_TEXT_SENSOR
-  SUB_TEXT_SENSOR(status)
+	SUB_TEXT_SENSOR(status)
 #endif
 
-  void set_data_led(output::BinaryOutput *data_led) { this->data_led_ = data_led; } // flash LED 
-  
-  void setup() override;
-  void dump_config() override;
-  void update() override;
-  void loop() override;
+	// flash LED 
+	void set_data_led(output::BinaryOutput *data_led) { this->data_led_ = data_led; }
 
-  float get_setup_priority() const override;
+	void setup() override;
+	void dump_config() override;
+	void update() override;
+	void loop() override;
 
- protected:
-  void publish_nans_();
-  void flash_data_led_(); // function for flashing the LED on updated values
-    
-  std::vector<uint8_t> data_;
-  uint32_t last_transmission_{0};
-  uint16_t last_send_tx_offset_{0};
-  uint8_t receiving_{0};
-  uint8_t init_state_{0};
-  bool trigger_next_{true};
-  bool FCB_;
+	float get_setup_priority() const override;
 
-  output::BinaryOutput *data_led_{nullptr}; // LED related
-  uint32_t data_led_off_time_{0}; // LED related
+protected:
+	void publish_nans_();
+
+	// function for flashing the LED on updated values
+	void flash_data_led_();
+
+	std::vector<uint8_t> data_;
+	uint32_t last_transmission_{0};
+	uint16_t last_send_tx_offset_{0};
+	uint8_t  receiving_{0};
+	uint8_t  init_state_{0};
+	bool     trigger_next_{true};
+	bool     FCB_;
+
+	// LED related
+	output::BinaryOutput *data_led_{nullptr};
+	uint32_t data_led_off_time_{0};
 };
 
+// ============================================================================
 }  // namespace sensostar
 }  // namespace esphome
+// ============================================================================
 

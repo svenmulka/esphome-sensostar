@@ -5,12 +5,66 @@
 #
 # Board-spezifisches (Chip, Pins, ggf. Logger-UART) steht NICHT
 # hier, sondern in der jeweiligen Geräte-Datei
-# (sensostar_red.yaml, sensostar_white_xxx.yaml = ESP32-C6, sensostar_black.yaml = ESP32-S3)
+#   sensostar_red.yaml = ESP32-C6
+#   sensostar_white_xxx.yaml = ESP32-C6 
+#   sensostar_black.yaml = ESP32-S3
 # und wird über substitutions hereingereicht:
 #   pin_uart_tx / pin_uart_rx
 #   pin_adc_input / pin_adc_control
 #   pin_heartbeat / pin_wifi_led / pin_mbus_data / pin_mbus_yellow
 # ============================================================
+
+# -------------------------------------------------------------------------
+# Entity Naming Convention
+# -------------------------------------------------------------------------
+# Entity names should describe the property or function of the device.
+# The device name already provides the context for Home Assistant entity IDs.
+#
+# Device-specific entities:
+#   Use short, descriptive names without an additional prefix.
+#   Examples: Energy, Power, Flow Rate, Supply Temperature
+#
+# General-purpose entities:
+#   Use a category prefix to distinguish system-wide functions.
+#   Examples: System Restart, WiFi SSID, MQTT Connection
+#
+# Internal ESPHome IDs:
+#   Use lowercase snake_case with category prefixes where appropriate.
+#   Type prefixes (e.g. btn_ for buttons) may improve readability.
+#   IDs provide stable references for C++ code, automations, and YAML.
+#   They also identify components for !extend and !remove when
+#   customizing configurations through packages.
+#
+#   Examples:
+#     energy, flow_rate, wifi_ssid, wifi_rssi
+#     btn_system_restart, btn_system_safe_mode
+#
+# Example - Entity definition:
+#   esphome:
+#     name: sensostar
+#     friendly_name: "SensoStar"
+#
+#   sensor:
+#     - platform: template
+#       name: "Power"
+#       id: power
+#       unit_of_measurement: "kW"
+#
+#   Resulting Home Assistant entity ID:
+#     sensor.sensostar_power
+#
+# Example - Modify an existing component:
+#   button:
+#     - id: !extend btn_system_restart
+#       name: "System Reboot"
+#
+# Example - Remove an existing component:
+#   button:
+#     - id: !remove btn_system_restart
+#
+# This convention ensures consistent, readable, and reusable entity IDs
+# across different ESPHome devices and Home Assistant integrations.
+# -------------------------------------------------------------------------
 
 # ----- on_boot: gemeinsame Boot-Aktionen --------------------
 # WiFi- bzw. Ethernet-Module können weitere Aktionen anhängen.
@@ -128,7 +182,7 @@ sensor:
     update_interval: never   # getriggert durch read_adc_script
     entity_category: diagnostic
     web_server:
-      sorting_weight: 111
+      sorting_weight: 20
     filters:
       - lambda: return x * 3.6;   # Vbat via Spannungsteiler 39k--o--15k
 
@@ -139,7 +193,8 @@ substitutions:
 # ----- Text-Sensoren ----------------------------------------
 text_sensor:
   - platform: template
-    name: "ESPHome Version"
+    id: esphome_version
+    name: "Firmware ESPHome Version"
     entity_category: diagnostic
     web_server:
       sorting_group_id: group_firmware
@@ -149,6 +204,7 @@ text_sensor:
     update_interval: 3600s
 
   - platform: template
+    id: git_version_tag
     name: "Firmware Git Version Tag"
     entity_category: diagnostic
     icon: mdi:git
@@ -215,26 +271,38 @@ interval:
 # ----- Buttons ----------------------------------------------
 button:
   - platform: template
-    id: btn_read_battery
-    name: "Read battery level now"
+    name: "Battery Level read"
+    id: btn_battery_read
     entity_category: diagnostic
     web_server:
-      sorting_weight: 110
+      sorting_weight: 21
     on_press:
       then:
         - script.execute: read_adc_script
 
-  - platform: factory_reset
-    id: btn_factory_reset
-    name: Factory reset
-
   - platform: restart
-    id: btn_reboot
-    name: Reboot
+    name: "System Restart"
+    id: btn_restart
+    entity_category: config
+    web_server:
+      sorting_group_id: group_system
+      sorting_weight: 20
 
   - platform: safe_mode
+    name: "System Safe Mode"
     id: btn_safe_mode
-    name: Safe Mode Boot
+    entity_category: config
+    web_server:
+      sorting_group_id: group_system
+      sorting_weight: 21
+
+  - platform: factory_reset
+    name: "System Factory Reset"
+    id: btn_factory_reset
+    entity_category: config
+    web_server:
+      sorting_group_id: group_system
+      sorting_weight: 22
 
 # ----- Binäre Sensoren --------------------------------------
 binary_sensor:
@@ -261,7 +329,7 @@ mqtt:
 text:
   - platform: template
     mode: text
-    name: "1. MQTT address"
+    name: "MQTT address"
     id: "broker_address"
     icon: "mdi:text"
     optimistic: true
@@ -269,6 +337,9 @@ text:
     entity_category: config
     #initial_value: ""
     restore_value: true
+    web_server:
+      sorting_group_id: group_mqt
+      sorting_weight: 20
     on_value:
       then:
         - logger.log:
@@ -280,7 +351,7 @@ text:
 
   - platform: template
     mode: text
-    name: "2. MQTT Port"
+    name: "MQTT Port"
     id: "mqtt_port"
     icon: "mdi:text"
     optimistic: true
@@ -288,6 +359,9 @@ text:
     entity_category: config
     initial_value: "1883"
     restore_value: true
+    web_server:
+      sorting_group_id: group_mqt
+      sorting_weight: 21
     on_value:
       then:
         - logger.log:
@@ -304,7 +378,7 @@ text:
 
   - platform: template
     mode: text
-    name: "3. MQTT Username"
+    name: "MQTT Username"
     id: "mqtt_user"
     icon: "mdi:text"
     optimistic: true
@@ -312,6 +386,9 @@ text:
     entity_category: config
     #initial_value: ""
     restore_value: true
+    web_server:
+      sorting_group_id: group_mqt
+      sorting_weight: 22
     on_value:
       then:
         - logger.log:
@@ -323,7 +400,7 @@ text:
 
   - platform: template
     mode: password
-    name: "4. MQTT Password"
+    name: "MQTT Password"
     id: "mqtt_pwd"
     icon: "mdi:text"
     optimistic: true
@@ -331,6 +408,9 @@ text:
     entity_category: config
     #initial_value: ""
     restore_value: true
+    web_server:
+      sorting_group_id: group_mqt
+      sorting_weight: 23
     on_value:
       then:
         - logger.log:
@@ -342,11 +422,14 @@ text:
 
 switch:
   - platform: template
-    name: "5. MQTT Enabled"
+    name: "MQTT Enabled"
     id: mqtt_enabled
     optimistic: true
     restore_mode: "RESTORE_DEFAULT_OFF"
     entity_category: config
+    web_server:
+      sorting_group_id: group_mqt
+      sorting_weight: 24
 
     turn_off_action:
       - logger.log: "MQTT disabled"
